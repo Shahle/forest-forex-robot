@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#050814">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;600;700&display=swap">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Bot Remote</title>
+<style>
+:root{
+  --bg:#050814;--panel:rgba(18,25,52,.55);--line:rgba(120,160,255,.16);--text:#e9f0ff;--dim:#7f8db3;
+  --up:#2ef2c4;--down:#ff4d8d;--warn:#ffc857;--accent:#35d0ff;--violet:#7c5cff;
+  --font:"Exo 2","Segoe UI",system-ui,-apple-system,sans-serif;
+  box-sizing:border-box;color-scheme:dark;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--text);font:16px/1.4 var(--font);font-variant-numeric:tabular-nums}
+body{background:
+  radial-gradient(70% 40% at 15% 0%,rgba(124,92,255,.35),transparent 70%),
+  radial-gradient(60% 40% at 100% 20%,rgba(53,208,255,.22),transparent 70%),
+  radial-gradient(60% 40% at 0% 100%,rgba(255,77,141,.16),transparent 70%),var(--bg);
+  background-attachment:fixed;min-height:100vh}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(rgba(120,160,255,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(120,160,255,.06) 1px,transparent 1px);
+  background-size:32px 32px;-webkit-mask-image:linear-gradient(#000,transparent 85%);mask-image:linear-gradient(#000,transparent 85%)}
+main{position:relative;z-index:1;max-width:520px;margin:0 auto;padding:16px 14px 48px}
+.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+h1{font-size:22px;margin:0;font-weight:700;letter-spacing:.5px;background:linear-gradient(90deg,#fff,var(--accent));-webkit-background-clip:text;background-clip:text;color:transparent}
+.pill{display:inline-flex;align-items:center;gap:8px;padding:6px 13px;border-radius:99px;background:rgba(255,255,255,.04);border:1px solid var(--line);font-size:13px;font-weight:600;backdrop-filter:blur(8px)}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--dim)}
+.running{border-color:rgba(46,242,196,.5);color:var(--up)}
+.running .dot{background:var(--up);box-shadow:0 0 10px var(--up);animation:pulse 1.8s ease-out infinite}
+.paused{border-color:rgba(255,200,87,.5);color:var(--warn)}.paused .dot{background:var(--warn);box-shadow:0 0 10px var(--warn)}
+.offline{border-color:rgba(255,77,141,.5);color:var(--down)}.offline .dot{background:var(--down);box-shadow:0 0 10px var(--down)}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(46,242,196,.7)}100%{box-shadow:0 0 0 10px rgba(46,242,196,0)}}
+.panel{position:relative;background:var(--panel);border-radius:18px;padding:16px;margin-bottom:14px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 10px 40px rgba(0,0,0,.35)}
+.panel::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;pointer-events:none;
+  background:linear-gradient(140deg,rgba(53,208,255,.7),rgba(124,92,255,.12) 45%,rgba(255,77,141,.4));
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+.pnl{font-size:52px;font-weight:700;line-height:1.05;letter-spacing:-1px;text-shadow:0 0 24px currentColor}
+.up{color:var(--up)}.down{color:var(--down)}
+.sub{color:var(--dim);font-size:13px;margin-top:4px}
+#spark{width:100%;height:60px;display:block;margin-top:10px}
+.grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:14px}
+.grid div{font-size:12px;color:var(--dim);padding:10px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid var(--line)}
+.grid b{display:block;font-size:18px;color:var(--text);font-weight:700;margin-top:2px}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+button{font:inherit;font-weight:700;letter-spacing:.3px;border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--text);border-radius:14px;padding:15px 10px;min-height:54px;cursor:pointer;backdrop-filter:blur(8px);transition:transform .12s,box-shadow .2s}
+button:active{transform:scale(.97)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button:disabled{opacity:.4}
+.go{background:linear-gradient(120deg,var(--accent),var(--up));color:#02121a;border-color:transparent;box-shadow:0 0 22px rgba(46,242,196,.4)}
+.stop{color:var(--down);border-color:rgba(255,77,141,.6);box-shadow:inset 0 0 14px rgba(255,77,141,.12)}
+.panic{grid-column:1/-1;background:linear-gradient(120deg,#ff4d8d,#ff7a45);color:#fff;border-color:transparent;box-shadow:0 0 26px rgba(255,77,141,.5)}
+h2{font-size:14px;margin:0 0 10px;font-weight:700;color:var(--accent);display:flex;align-items:center;gap:8px}
+h2::before{content:"";width:8px;height:8px;border-radius:2px;background:var(--accent);box-shadow:0 0 10px var(--accent);transform:rotate(45deg)}
+.pos{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.pos:first-of-type{border-top:0}
+.pos small{color:var(--dim);display:block}
+.pos .r{text-align:right;font-weight:700;text-shadow:0 0 12px currentColor}
+.empty{color:var(--dim);font-size:14px}
+#log{font:12px/1.6 ui-monospace,Menlo,monospace;color:#9fb0d8;max-height:180px;overflow:auto;white-space:pre-wrap;word-break:break-word}
+label{display:block;font-size:13px;color:var(--dim);margin:10px 0 4px}
+input{width:100%;font:inherit;padding:12px;border-radius:12px;border:1px solid var(--line);background:rgba(3,6,18,.6);color:var(--text)}
+input::placeholder{color:#4d5a7d}
+.row{display:flex;gap:10px;margin-top:12px}.row button{flex:1}
+#toast{position:fixed;z-index:5;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:rgba(20,28,60,.9);border:1px solid var(--accent);color:var(--text);padding:10px 18px;border-radius:99px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90%;box-shadow:0 0 20px rgba(53,208,255,.35)}
+#toast.on{opacity:1}
+dialog{border:1px solid var(--line);border-radius:18px;background:#0d1330;color:var(--text);padding:20px;max-width:340px;width:calc(100% - 40px);box-shadow:0 0 40px rgba(124,92,255,.35)}
+dialog::backdrop{background:rgba(2,4,12,.75);backdrop-filter:blur(4px)}
+dialog p{margin:0 0 16px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+main{padding-bottom:110px}
+.page[hidden]{display:none}
+.page.in{animation:pgin .25s ease-out}
+@keyframes pgin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.acctname{font-size:26px;font-weight:700;margin-top:2px;text-shadow:0 0 18px rgba(53,208,255,.5)}
+.pwwrap{position:relative}.pwwrap input{padding-right:78px}
+.pwwrap button{position:absolute;right:6px;top:6px;min-height:34px;padding:4px 12px;font-size:13px;border-radius:9px}
+nav{position:fixed;z-index:4;left:0;right:0;bottom:0;display:flex;gap:10px;justify-content:center;padding:8px 14px calc(8px + env(safe-area-inset-bottom,0px));background:rgba(5,8,20,.78);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border-top:1px solid var(--line)}
+nav button{flex:1;max-width:240px;min-height:54px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:12px;background:transparent;border-color:transparent;color:var(--dim);padding:6px}
+nav button.on{color:var(--accent);background:rgba(53,208,255,.1);border-color:rgba(53,208,255,.4);box-shadow:0 0 16px rgba(53,208,255,.25)}
+nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#toast{bottom:calc(88px + env(safe-area-inset-bottom,0px))}
+</style>
+</head>
+<body>
+<main>
+  <div class="top">
+    <h1>Bot Remote</h1>
+    <span class="pill offline" id="pill"><span class="dot"></span><span id="state">Connecting</span></span>
+  </div>
+
+  <div class="page" id="pg-dash">
+  <section class="panel">
+    <div class="sub">Today's P&amp;L</div>
+    <div class="pnl" id="pnl">--</div>
+    <canvas id="spark"></canvas>
+    <div class="sub" id="upd">No data yet</div>
+    <div class="grid">
+      <div>Balance<b id="bal">--</b></div>
+      <div>Open<b id="open">--</b></div>
+      <div>Win rate<b id="win">--</b></div>
+    </div>
+  </section>
+
+  <div class="btns">
+    <button class="go" id="bStart">Start bot</button>
+    <button class="stop" id="bStop">Stop bot</button>
+    <button id="bPause">Pause entries</button>
+    <button id="bRefresh">Refresh</button>
+    <button class="panic" id="bPanic">Close all positions</button>
+  </div>
+
+  <section class="panel">
+    <h2>Open positions</h2>
+    <div id="pos"><div class="empty">No open positions.</div></div>
+  </section>
+
+  <section class="panel">
+    <h2>Recent activity</h2>
+    <div id="log">Waiting for the bot…</div>
+  </section>
+</div>
+
+  <div class="page" id="pg-mt" hidden>
+  <section class="panel">
+    <div class="sub">MetaTrader 5 account</div>
+    <div class="acctname" id="acctName">Not logged in</div>
+    <div class="sub" id="acct">Enter your broker details below.</div>
+  </section>
+
+  <section class="panel">
+    <h2>Broker login</h2>
+    <label for="mlogin">Login number</label>
+    <input id="mlogin" inputmode="numeric" autocomplete="off" placeholder="12345678">
+    <label for="mpass">Password</label>
+    <div class="pwwrap"><input id="mpass" type="password" autocomplete="off" placeholder="Not saved on this phone"><button type="button" id="bShow">Show</button></div>
+    <label for="msrv">Broker server</label>
+    <input id="msrv" autocapitalize="off" autocorrect="off" placeholder="BrokerName-Demo">
+    <label for="tok">Access token</label>
+    <input id="tok" type="password" autocomplete="off" placeholder="The BOT_TOKEN you set on your laptop">
+    <div class="row"><button class="go" id="bMt5">Log in to MetaTrader</button></div>
+    <div class="sub" style="margin-top:12px">Sent to your laptop and kept in its memory only. Use a VPN like Tailscale, since plain http isn't encrypted.</div>
+  </section>
+
+</div>
+</main>
+<nav>
+  <button data-pg="dash" class="on"><svg viewBox="0 0 24 24"><path d="M3 12l4-5 4 6 4-9 6 10"/><path d="M3 20h18"/></svg>Dashboard</button>
+  <button data-pg="mt"><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="3"/><path d="M8 8h8M8 12h8M8 16h4"/></svg>MetaTrader</button>
+</nav>
+
+<dialog id="dlg">
+  <p id="dlgMsg"></p>
+  <div class="row"><button id="dNo">Cancel</button><button class="stop" id="dYes">Confirm</button></div>
+</dialog>
+<div id="toast" role="status"></div>
+
+<script>
+const $=id=>document.getElementById(id);
+let cfg={url:'',tok:'',demo:false},timer=null,logs=[];
+try{cfg=Object.assign(cfg,JSON.parse(localStorage.getItem('botcfg')||'{}'))}catch(e){}
+cfg.url=/^https?:/.test(location.protocol)?location.origin:'';
+cfg.demo=/demo/.test(location.search);
+$('tok').value=cfg.tok||'';
+
+/* ---- demo bot (used when no laptop is connected) ---- */
+const demo={state:'stopped',pnl:0,bal:10000,pos:[{sym:'BTC/USDT',side:'long',size:0.05,entry:64210,pnl:42.1},{sym:'ETH/USDT',side:'short',size:0.8,entry:3120,pnl:-11.4}]};
+function demoCall(path){
+  if(path==='/start')demo.state='running';
+  if(path==='/stop')demo.state='stopped';
+  if(path==='/pause')demo.state=demo.state==='paused'?'running':'paused';
+  if(path==='/panic'){demo.pos=[];demo.state='paused'}
+  if(demo.state==='running'){demo.pnl+=(Math.random()-.45)*8;demo.pos.forEach(p=>p.pnl+=(Math.random()-.5)*5)}
+  return {state:demo.state,pnl:demo.pnl,balance:demo.bal+demo.pnl,win_rate:.58,positions:demo.pos,
+          account:'12345678 @ Demo-Server',log:['[demo] bot '+demo.state,'[demo] scanning 12 pairs']};
+}
+
+async function call(path,method='GET',body){
+  if(cfg.demo)return path==='/connect'?{ok:true}:demoCall(method==='GET'?'':path);
+  const ctl=new AbortController(),t=setTimeout(()=>ctl.abort(),15000);
+  try{
+    const r=await fetch(cfg.url.replace(/\/$/,'')+path,{method,signal:ctl.signal,
+      headers:{'Authorization':'Bearer '+cfg.tok,'Content-Type':'application/json'},
+      body:body?JSON.stringify(body):undefined});
+    const j=await r.json().catch(()=>({}));
+    if(!r.ok)throw new Error(j.error||'HTTP '+r.status);
+    return j;
+  }finally{clearTimeout(t)}
+}
+
+const hist=[];
+function spark(v){
+  hist.push(v);if(hist.length>60)hist.shift();
+  const c=$('spark'),r=window.devicePixelRatio||1,w=c.clientWidth,h=c.clientHeight;
+  if(!w)return;c.width=w*r;c.height=h*r;
+  const x=c.getContext('2d');x.scale(r,r);
+  if(hist.length<2)return;
+  const mn=Math.min(...hist,0),mx=Math.max(...hist,0),rg=(mx-mn)||1;
+  const px=i=>i/(hist.length-1)*w,py=y=>h-4-(y-mn)/rg*(h-8);
+  const col=v>=0?'#2ef2c4':'#ff4d8d';
+  x.strokeStyle='rgba(127,141,179,.35)';x.setLineDash([3,4]);x.beginPath();x.moveTo(0,py(0));x.lineTo(w,py(0));x.stroke();x.setLineDash([]);
+  const g=x.createLinearGradient(0,0,0,h);g.addColorStop(0,col+'55');g.addColorStop(1,col+'00');
+  x.beginPath();hist.forEach((y,i)=>i?x.lineTo(px(i),py(y)):x.moveTo(px(i),py(y)));
+  x.strokeStyle=col;x.lineWidth=2;x.shadowColor=col;x.shadowBlur=8;x.stroke();
+  x.shadowBlur=0;x.lineTo(w,h);x.lineTo(0,h);x.closePath();x.fillStyle=g;x.fill();
+}
+const money=n=>(n<0?'-':'+')+'$'+Math.abs(n).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+function render(d){
+  const s=d.state||'stopped';
+  $('pill').className='pill '+s;$('state').textContent=s[0].toUpperCase()+s.slice(1);
+  const p=Number(d.pnl||0);
+  $('pnl').textContent=money(p);$('pnl').className='pnl '+(p>=0?'up':'down');
+  spark(p);
+  $('bal').textContent=d.balance!=null?'$'+Number(d.balance).toLocaleString(undefined,{maximumFractionDigits:0}):'--';
+  $('open').textContent=(d.positions||[]).length;
+  $('win').textContent=d.win_rate!=null?Math.round(d.win_rate*100)+'%':'--';
+  $('upd').textContent='Updated '+new Date().toLocaleTimeString();
+  if(d.account){$('acctName').textContent=d.account;$('acct').textContent='Logged in'+(d.balance!=null?' · Balance $'+Number(d.balance).toLocaleString(undefined,{maximumFractionDigits:0}):'')}
+  $('bPause').textContent=s==='paused'?'Resume entries':'Pause entries';
+  const ps=d.positions||[];
+  $('pos').innerHTML=ps.length?ps.map(x=>`<div class="pos"><div>${esc(x.sym)}<small>${esc(x.side)} · ${x.size} @ ${x.entry}</small></div><div class="r ${x.pnl>=0?'up':'down'}">${money(x.pnl)}</div></div>`).join(''):'<div class="empty">No open positions.</div>';
+  if(d.log&&d.log.length)$('log').textContent=d.log.slice(-15).join('\n');
+}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),2200)}
+function offline(msg){$('pill').className='pill offline';$('state').textContent='Offline';$('upd').textContent=msg}
+
+async function refresh(){
+  if(!cfg.demo&&!cfg.url){offline('Open this page from your laptop\'s address');return}
+  try{render(await call('/status'))}catch(e){offline('Can\'t reach laptop: '+e.message)}
+}
+async function act(path,label){
+  try{await call(path,'POST');toast(label);refresh()}catch(e){toast('Failed: '+e.message)}
+}
+function confirmDo(msg,fn){
+  $('dlgMsg').textContent=msg;$('dlg').showModal();
+  $('dYes').onclick=()=>{$('dlg').close();fn()};$('dNo').onclick=()=>$('dlg').close();
+}
+function poll(){clearInterval(timer);refresh();timer=setInterval(()=>{if(!document.hidden)refresh()},5000)}
+
+$('bStart').onclick=()=>act('/start','Bot started');
+$('bStop').onclick=()=>confirmDo('Stop the bot? Open positions stay open.',()=>act('/stop','Bot stopped'));
+$('bPause').onclick=()=>act('/pause','Updated');
+$('bRefresh').onclick=refresh;
+$('bPanic').onclick=()=>confirmDo('Close every open position at market and pause the bot?',()=>act('/panic','Closing all positions'));
+try{const m=JSON.parse(localStorage.getItem('mt5acct')||'{}');$('mlogin').value=m.login||'';$('msrv').value=m.server||''}catch(e){}
+$('bMt5').onclick=async()=>{
+  const login=$('mlogin').value.trim(),server=$('msrv').value.trim(),password=$('mpass').value;
+  cfg.tok=$('tok').value;
+  if(!login||!password||!server||(!cfg.demo&&!cfg.tok)){toast('Fill in every field');return}
+  try{localStorage.setItem('botcfg',JSON.stringify({tok:cfg.tok}))}catch(e){}
+  $('bMt5').disabled=true;$('acct').textContent='Logging in…';
+  try{
+    await call('/connect','POST',{login,password,server});
+    try{localStorage.setItem('mt5acct',JSON.stringify({login,server}))}catch(e){}
+    $('mpass').value='';toast('Logged in to MT5');refresh();
+  }catch(e){$('acct').textContent='Login failed: '+e.message}
+  $('bMt5').disabled=false;
+};
+function show(id){
+  document.querySelectorAll('.page').forEach(p=>{const on=p.id==='pg-'+id;p.hidden=!on;p.classList.toggle('in',on)});
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.pg===id));
+  window.scrollTo(0,0);
+}
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{show(b.dataset.pg);if(b.dataset.pg==='dash')refresh()});
+$('bShow').onclick=()=>{const i=$('mpass'),h=i.type==='password';i.type=h?'text':'password';$('bShow').textContent=h?'Hide':'Show'};
+show((cfg.tok||cfg.demo)?'dash':'mt');
+poll();
+</script>
+</body>
+</html>
